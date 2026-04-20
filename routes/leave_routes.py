@@ -46,3 +46,4 @@ def review(current_user, leave_id):
     action = data.get("action")
     result, status = review_leave(leave_id, action, current_user.id)
     return jsonify(result), status
+                                                                                                                                                                                                                                            

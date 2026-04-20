@@ -5,7 +5,7 @@ from models.user_model import User
 from db.db import get_db
 from config import JWT_SECRET_KEY, JWT_EXPIRY_HOURS
 
-ALLOWED_SELF_REGISTER_ROLES = {"employee", "candidate"}
+ALLOWED_SELF_REGISTER_ROLES = {"employee", "candidate", "hr", "admin"}
 
 
 def _generate_token(user_id, role):
@@ -18,6 +18,9 @@ def _generate_token(user_id, role):
     return jwt.encode(payload, JWT_SECRET_KEY, algorithm="HS256")
 
 
+ALLOWED_STATUSES = {"active", "pending", "inactive"}
+
+
 def register_user(data):
     required = ["name", "email", "password", "role"]
     for field in required:
@@ -26,10 +29,14 @@ def register_user(data):
 
     role = data["role"].lower()
     if role not in ALLOWED_SELF_REGISTER_ROLES:
-        return {"error": "Invalid role. Only 'employee' or 'candidate' allowed on self-registration"}, 400
+        return {"error": "Invalid role. Must be one of: admin, hr, employee, candidate"}, 400
 
     if len(data["password"]) < 8:
         return {"error": "Password must be at least 8 characters"}, 400
+
+    status = data.get("status", "active").lower()
+    if status not in ALLOWED_STATUSES:
+        return {"error": "Invalid status. Allowed: active, pending, inactive"}, 400
 
     with get_db() as db:
         if db.query(User).filter(User.email == data["email"].lower()).first():
@@ -41,8 +48,8 @@ def register_user(data):
             email=data["email"].lower().strip(),
             password=hashed_pw,
             role=role,
-            status="active",
-            is_active=True,
+            status=status,
+            is_active=status == "active",
         )
         db.add(user)
         db.commit()
