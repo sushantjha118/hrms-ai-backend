@@ -1,7 +1,8 @@
 from flask import Blueprint, request, jsonify
 from services.attendance_service import (
     get_today_attendance, get_attendance_by_employee,
-    mark_attendance, get_attendance_stats, get_weekly_stats
+    mark_attendance, get_attendance_stats, get_weekly_stats,
+    import_attendance_file
 )
 from utils.auth_middleware import role_required, token_required
 
@@ -54,4 +55,13 @@ def my_attendance(current_user):
 @role_required("admin", "hr")
 def mark(current_user):
     result, status = mark_attendance(request.json or {})
+    return jsonify(result), status
+
+
+@attendance_bp.route("/import", methods=["POST", "OPTIONS"])
+@role_required("admin", "hr")
+def import_attendance(current_user):
+    if "file" not in request.files:
+        return jsonify({"error": "No file uploaded"}), 400
+    result, status = import_attendance_file(request.files["file"])
     return jsonify(result), status

@@ -35,10 +35,15 @@ Base.metadata.create_all(engine)
 app = Flask(__name__)
 
 # CORS — allow React frontend
-CORS(app, resources={r"/api/*": {"origins": [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]}}, supports_credentials=True)
+CORS(app,
+    resources={r"/api/*": {"origins": [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ]}},
+    supports_credentials=True,
+    allow_headers=["Content-Type", "Authorization"],
+    methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+)
 
 # Register blueprints
 app.register_blueprint(auth_bp,         url_prefix="/api/auth")

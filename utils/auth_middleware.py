@@ -9,6 +9,8 @@ from config import JWT_SECRET_KEY
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
+        if request.method == "OPTIONS":
+            return jsonify({}), 200
         token = request.headers.get("Authorization", "").replace("Bearer ", "").strip()
         if not token:
             return jsonify({"error": "Token is missing"}), 401
@@ -35,6 +37,8 @@ def role_required(*roles):
     def decorator(f):
         @wraps(f)
         def decorated(*args, **kwargs):
+            if request.method == "OPTIONS":
+                return jsonify({}), 200
             token = request.headers.get("Authorization", "").replace("Bearer ", "").strip()
             if not token:
                 return jsonify({"error": "Token is missing"}), 401
